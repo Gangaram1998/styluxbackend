@@ -1,19 +1,20 @@
 const jwt=require("jsonwebtoken")
 require("dotenv").config()
-
-const authenticator=async(req,res,next)=>{
+const adminValidator=async(req,res,next)=>{
     try{
-        const token=req.headers.authorization
+        const token=req.headers.authorization;
         const decoded=jwt.verify(token,process.env.secretKey)
         if(decoded){
-            if(decoded.role==="deactivate"){
+            if(decoded.role=="admin" || decoded.role=="superadmin"){
+                next()
+            }
+            else{
                 res.send({
-                    message:"Your Account is deactivated  Conatact SuperAdmin",
+                    message:"Operation not authorised,Please contact admin",
                     status:0,
                     error:true
                 })
             }
-            next()
         }
         else{
             res.send({
@@ -22,11 +23,16 @@ const authenticator=async(req,res,next)=>{
                 error:true
             })
         }
+            
     }catch(err){
-        console.log(err)
+        res.send({
+            err,
+            err:true,
+            status:0
+        })
     }
 }
 
 module.exports={
-    authenticator
+    adminValidator
 }
